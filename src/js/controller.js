@@ -7,6 +7,7 @@ import searchView from './views/searchView.js';
 import searchRecipesView from './views/searchRecipesView.js';
 import pageNavView from './views/pageNavView.js';
 import previewView from './views/previewView.js';
+import AddRecipeView from './views/addRecipeView';
 
 
 import 'core-js/stable';                //transfiling
@@ -14,6 +15,7 @@ import 'regenerator-runtime/runtime';   //polyfying
 
 import { async } from 'regenerator-runtime';
 import toggleBookmarkView from './views/toggleBookmarkView.js';
+import addRecipeView from './views/addRecipeView';
 
 
 
@@ -129,10 +131,28 @@ const changeServingsControl = function(changeServings) {
 
 }
 
+const addRecipeControl = async function (formdata) {
+  try {
+    //show sending start
+    addRecipeView.renderSpinner();
+
+    //uploading
+    await model.uploadRecipe(formdata);
+
+    //success mesage
+    addRecipeView.renderInfo();
+
+    //
+  } catch (err) {
+    console.log('new', err);
+    addRecipeView.renderError(err.message);
+  }
+}; 
+
 
 const init = function() {
-  recipeView.addHandlerRender(recipeControl)
-  
+  recipeView.addHandlerRender(recipeControl);
+
   //searchRecipes
   //FIXME:
   searchControl();
@@ -141,7 +161,6 @@ const init = function() {
   //pagenation
   pageNavView.addHandlerButton(pageNavControl);
 
-
   //change servings
   recipeView.addHandlerChangeServings(changeServingsControl);
 
@@ -149,6 +168,8 @@ const init = function() {
   toggleBookmarkView.render(model.state.bookmarks);
   recipeView.addHandlerToggleBookmark(toggleBookmarkControl);
 
+  //add recipe
+  addRecipeView.addHandlerAddRecipe(addRecipeControl);
 }
 
 init();

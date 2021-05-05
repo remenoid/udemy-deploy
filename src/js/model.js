@@ -45,6 +45,40 @@ export const loadRecipe = async function(recipeId) {
   }    
 }
 
+const validateUploadRecipe = function (raw) {
+  const recipeNew = Object.fromEntries(raw.entries());
+
+  console.log(recipeNew);
+  throw Error('data error');
+};
+
+export const uploadRecipe = async function (formData) {
+  try {
+    const newRecipe = validateUploadRecipe(formData);
+
+    // const result = await getJSON(`${API_URL}/${recipeId}`);
+    // //console.log(result);
+
+    // const { recipe } = result.data;
+
+    // state.recipe = {
+    //   id: recipe.id,
+    //   title: recipe.title,
+    //   publisher: recipe.publisher,
+    //   sourceUrl: recipe.source_url,
+    //   image: recipe.image_url,
+    //   servings: recipe.servings,
+    //   cookingTime: recipe.cooking_time,
+    //   ingredients: recipe.ingredients,
+    // }
+
+    //console.log(state.recipe);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 //https://forkify-api.herokuapp.com/api/v2/recipes?search=pizza
 export const loadSearchRecipes = async function(query) {
 

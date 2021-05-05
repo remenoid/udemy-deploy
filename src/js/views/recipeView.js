@@ -9,27 +9,25 @@ class RecipeView extends View {
   _parentEle = document.querySelector('.recipe');
   _errorDefault = 'No recipes found for your query. Please try again!';
   _infoDefault = 'Start by searching for a recipe or an ingredient. Have fun!';
-  
+
   addHandlerRender(subscriber) {
     const evs = ['hashchange', 'load'];
     evs.forEach(ev => window.addEventListener(ev, subscriber));
   }
 
   addHandlerChangeServings(subscriber) {
-    this._parentEle.addEventListener('click', function(ev) {
+    this._parentEle.addEventListener('click', function (ev) {
       const btn = ev.target.closest('.btn--change-servings');
       //console.log(btn);
       if (!btn) return;
 
       const changeServings = btn.dataset.changeQuantity;
       subscriber(+changeServings);
-
     });
-
   }
-  
+
   addHandlerToggleBookmark(subscriber) {
-    this._parentEle.addEventListener('click', function(ev) {
+    this._parentEle.addEventListener('click', function (ev) {
       const btn = ev.target.closest('.recipe__btn--bookmark');
       //console.log(btn);
       if (!btn) return;
@@ -51,23 +49,31 @@ class RecipeView extends View {
           <svg class="recipe__info-icon">
             <use href="${icons}#icon-clock"></use>
           </svg>
-          <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>
+          <span class="recipe__info-data recipe__info-data--minutes">${
+            this._data.cookingTime
+          }</span>
           <span class="recipe__info-text">minutes</span>
         </div>
         <div class="recipe__info">
           <svg class="recipe__info-icon">
             <use href="${icons}#icon-users"></use>
           </svg>
-          <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>
+          <span class="recipe__info-data recipe__info-data--people">${
+            this._data.servings
+          }</span>
           <span class="recipe__info-text">servings</span>
 
           <div class="recipe__info-buttons">
-            <button class="btn--tiny btn--change-servings" data-change-quantity="${this._data.servings - 1}">
+            <button class="btn--tiny btn--change-servings" data-change-quantity="${
+              this._data.servings - 1
+            }">
               <svg>
                 <use href="${icons}#icon-minus-circle"></use>
               </svg>
             </button>
-            <button class="btn--tiny btn--change-servings" data-change-quantity="${this._data.servings + 1}">
+            <button class="btn--tiny btn--change-servings" data-change-quantity="${
+              this._data.servings + 1
+            }">
               <svg>
                 <use href="${icons}#icon-plus-circle"></use>
               </svg>
@@ -82,7 +88,9 @@ class RecipeView extends View {
         </div>
         <button class="btn--round recipe__btn--bookmark">
           <svg class="">
-            <use href="${icons}#icon-bookmark${this._data.bookmarked ? '' : '-fill'}"></use>
+            <use href="${icons}#icon-bookmark${
+      this._data.bookmarked ? '' : '-fill'
+    }"></use>
           </svg>
         </button>
       </div>
@@ -113,7 +121,6 @@ class RecipeView extends View {
         </a>
       </div>
     `;
-
   }
 
   _gredientMarkup(ingredient) {
@@ -122,7 +129,9 @@ class RecipeView extends View {
     <svg class="recipe__icon">
     <use href="${icons}#icon-check"></use>
     </svg>
-    <div class="recipe__quantity">${ingredient.quantity ? new Fraction(ingredient.quantity).toString() : ''}</div>
+    <div class="recipe__quantity">${
+      ingredient.quantity ? new Fraction(ingredient.quantity).toString() : ''
+    }</div>
     <div class="recipe__description">
     <span class="recipe__unit">${ingredient.unit}</span>
     ${ingredient.description}
@@ -130,7 +139,6 @@ class RecipeView extends View {
     </li>
     `;
   }
-
 }
 
 export default new RecipeView();
