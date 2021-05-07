@@ -43,32 +43,30 @@ ok: false
 const recipeControl = async function () {
   
   try {
-
     //0. fetch id
     const recipeId = window.location.hash.slice(1);
-    
+
     //console.log(recipeId);
     if (!recipeId) return;
 
-        
     //1.1 render spinner
     recipeView.renderSpinner();
-    
+
     //1.2 fetch recipe
     await model.loadRecipe(recipeId);
-    
-    //check bookmarked
-    model.state.recipe.bookmarked = model.state.bookmarks?.some( el => el.id === recipeId) ?? false;
-    
-    console.log(model.state.recipe);
-    
-    //2. display recipe;
-    recipeView.render(model.state.recipe); 
-    
-    //3. search result active change
-    searchRecipesView.updateRender(model.loadPageRecipes());
 
-  
+    //check bookmarked
+    model.state.recipe.bookmarked =
+      model.state.bookmarks?.some(el => el.id === recipeId) ?? false;
+
+    console.log(model.state.recipe);
+
+    //2. display recipe;
+    recipeView.render(model.state.recipe);
+
+    //3. search result active change when query exist
+    if (model.state.query !== null)
+      searchRecipesView.updateRender(model.loadPageRecipes());
   } catch (err) {
     recipeView.renderError(`❌❌${err}❌❌`);
     console.error(err);
@@ -142,10 +140,29 @@ const addRecipeControl = async function (formdata) {
     //success mesage
     addRecipeView.renderInfo();
 
+    //새로 입력한 자료로 다시 그리기 및 new input data init
+    recipeView.render(model.state.recipe);
+    model.state.uploading = {};
+
+    //pushState()는 이전 URL과 신규 URL의 해시가 다르더라도 절대 hashchange (en-US) 이벤트를 유발하지 않습니다.
+    window.history.pushState(null, '', `#${model.state.recipe.id}`);
+
+    //render bookmark view
+    toggleBookmarkView.render(model.state.bookmarks);
+
+    //close form window
+    setTimeout(() => {
+      addRecipeView.toggleModal();
+      //입력화면 초기화
+      addRecipeView.render(model.state.uploading);
+    }, 3000);
+
     //
   } catch (err) {
     console.log('new', err);
-    addRecipeView.renderError(err.message);
+    //addRecipeView.renderError(err.message);
+    alert(err.message);
+    addRecipeView.render(model.state.uploading);
   }
 }; 
 
@@ -154,9 +171,8 @@ const init = function() {
   recipeView.addHandlerRender(recipeControl);
 
   //searchRecipes
-  //FIXME:
-  searchControl();
-  //searchView.addHandlerSearch(searchControl);
+  //searchControl();
+  searchView.addHandlerSearch(searchControl);
 
   //pagenation
   pageNavView.addHandlerButton(pageNavControl);
@@ -169,6 +185,7 @@ const init = function() {
   recipeView.addHandlerToggleBookmark(toggleBookmarkControl);
 
   //add recipe
+  addRecipeView.render(model.state.uploading);
   addRecipeView.addHandlerAddRecipe(addRecipeControl);
 }
 

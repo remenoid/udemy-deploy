@@ -1,9 +1,11 @@
 import { async } from 'regenerator-runtime';
 import { API_URL } from './config';
+import { API_KEY } from './config';
 import { CNT_PER_PAGE } from './config';
 import { STORAGE_KEY } from './config';
 
-import { getJSON } from './helpers';
+// import { getJSON } from './helpers';
+import { AJAX } from './helpers';
 
 export const state = {
   recipe: {},
@@ -14,28 +16,36 @@ export const state = {
     curPage: 1,
     listCount: CNT_PER_PAGE,
   },
-  bookmarks: []
+  bookmarks: [],
+  uploading: {}
+}
+
+const createRecipeFormat = function(data) {
+
+  const { recipe } = data;
+
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    publisher: recipe.publisher,
+    sourceUrl: recipe.source_url,
+    image: recipe.image_url,
+    servings: recipe.servings,
+    cookingTime: recipe.cooking_time,
+    ingredients: recipe.ingredients,
+    ...(recipe.key && { key : recipe.key})
+  }
 }
 
 export const loadRecipe = async function(recipeId) {
 
   try {
     
-    const result = await getJSON(`${API_URL}/${recipeId}`);
+    const result = await AJAX(`${API_URL}/${recipeId}`);
     //console.log(result);
 
-    const { recipe } = result.data;
 
-    state.recipe = {
-      id: recipe.id,
-      title: recipe.title,
-      publisher: recipe.publisher,
-      sourceUrl: recipe.source_url,
-      image: recipe.image_url,
-      servings: recipe.servings,
-      cookingTime: recipe.cooking_time,
-      ingredients: recipe.ingredients,
-    }
+    state.recipe = createRecipeFormat(result.data);
     
     //console.log(state.recipe);
 
@@ -46,33 +56,44 @@ export const loadRecipe = async function(recipeId) {
 }
 
 const validateUploadRecipe = function (raw) {
+  
   const recipeNew = Object.fromEntries(raw.entries());
+  const newIngredients = Object.entries(recipeNew)
+    .filter( entry => entry[0].startsWith('ingredient') &&  entry[1] !== '')
+    .map( entry => {
+      const ingDetails = entry[1].trim().split(',');
+      if (ingDetails.length !== 3) throw new Error('ingredient input data wrong.');
+      console.log(ingDetails);
+      const  [ amount , unit, description ] = ingDetails;
+      return { quantity: +amount ? amount : null, unit, description };
+    });  
+    //error 시 다시 보여줌
+    state.uploading = recipeNew;
+    console.log(recipeNew);
 
-  console.log(recipeNew);
-  throw Error('data error');
-};
+    return {
+      // id: recipeNew.id,
+      title: recipeNew.title,
+      publisher: recipeNew.publisher,
+      source_url: recipeNew.sourceUrl,
+      image_url: recipeNew.image,
+      servings: +recipeNew.servings,
+      cooking_time: +recipeNew.cookingTime,
+      ingredients: newIngredients,
+
+    };
+
+}
 
 export const uploadRecipe = async function (formData) {
   try {
     const newRecipe = validateUploadRecipe(formData);
+    console.log(newRecipe);
+    const result = await AJAX(`${API_URL}?key=${API_KEY}`,newRecipe);
+    console.log(result);
+    
+    state.recipe = createRecipeFormat(result.data);
 
-    // const result = await getJSON(`${API_URL}/${recipeId}`);
-    // //console.log(result);
-
-    // const { recipe } = result.data;
-
-    // state.recipe = {
-    //   id: recipe.id,
-    //   title: recipe.title,
-    //   publisher: recipe.publisher,
-    //   sourceUrl: recipe.source_url,
-    //   image: recipe.image_url,
-    //   servings: recipe.servings,
-    //   cookingTime: recipe.cooking_time,
-    //   ingredients: recipe.ingredients,
-    // }
-
-    //console.log(state.recipe);
   } catch (err) {
     console.log(err);
     throw err;
@@ -84,19 +105,21 @@ export const loadSearchRecipes = async function(query) {
 
   try {
     state.search.query = query;
-    //state.search.curPage = 1;
     
-    const result = await getJSON(`${API_URL}?search=${query}`);
+    const result = await AJAX(`${API_URL}?search=${query}&key=${API_KEY}`);
     //console.log(result);
-
+    
     state.search.recipes = result.data.recipes.map(recipe => {
       return {
         id: recipe.id,
         title: recipe.title,
         publisher: recipe.publisher,
         image: recipe.image_url,
+        ...(recipe.key && {key : recipe.key})
       };
     });
+    
+    state.search.curPage = 1;
   } catch (err) {
     console.log(err);
     throw err;
